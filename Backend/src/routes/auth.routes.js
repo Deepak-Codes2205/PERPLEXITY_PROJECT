@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {registerUser} from "../controllers/auth.controller.js";
+import {registerUser, verifyEmail} from "../controllers/auth.controller.js";
 import { registerValidation } from "../validators/auth.validator.js";
 
 const authRouter = Router();
@@ -11,7 +11,9 @@ const authRouter = Router();
  * @access Public
  */
 authRouter.post("/register", registerValidation, registerUser);
-  
+
+authRouter.get("/verify-email", verifyEmail);
+
 
 //authRouter.post("/login", loginUser);
 
