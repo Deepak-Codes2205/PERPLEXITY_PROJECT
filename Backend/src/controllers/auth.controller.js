@@ -104,6 +104,19 @@ export const loginUser = async (req, res) => {
         err: "Email not verified"
       });
     }
+
+    // await sendEmail({
+    //   to: email,
+    //   subject: "Welcome to Our App",
+    //   html: `
+    //         <p>Hi ${username},</p>
+    //         <p>Thank you for registering at <strong>Perplexity</strong>. We are excited to have you on board.</p>
+    //         <p>Please verify your email address by clicking the link below:</p>
+    //         <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
+    //         <p>Best regards,<br>The Perplexity Team</p>
+    //       `
+    // });
+    
     const token = jwt.sign({ 
       id: user._id,
       username: user.username,
@@ -129,6 +142,76 @@ export const loginUser = async (req, res) => {
     });
   }
 }
+
+
+/**
+ * @desc Resend verification email
+ * @route POST /api/auth/resend-verification
+ * @access Public
+ */
+export const resendVerificationEmail = async (req, res) => {
+  try {
+
+    const { email } = req.body;
+
+    // Check user exists
+    const user = await userModel.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    // Check if already verified
+    if (user.verified) {
+      return res.status(400).json({
+        message: "Email already verified",
+        success: false,
+      });
+    }
+
+    // Generate new token
+    const emailVerificationToken = jwt.sign({
+        email: user.email,
+      },process.env.JWT_SECRET);
+
+    // Send verification email again
+    await sendEmail({
+      to: user.email,
+      subject: "Verify Your Email",
+      html: `
+        <p>Hi ${user.username},</p>
+
+        <p>You requested a new email verification link.</p>
+
+        <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">
+          Verify Email
+        </a>
+
+        <p>This link will expire in 1 hour.</p>
+
+        <p>Best regards,<br/>Perplexity Team</p>
+      `,
+    });
+
+    return res.status(200).json({
+      message: "Verification email sent successfully",
+      success: true,
+    });
+
+  } catch (error) {
+
+    console.error("Resend verification error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+};
+
 
 
 /**
@@ -161,7 +244,6 @@ export const getMe = async (req, res) => {
 
 
 
-
 /**
   * @desc Verify user's email address
   * @route GET /api/auth/verify-email
@@ -186,6 +268,17 @@ export const verifyEmail = async (req, res) => {
           err: "User not found"
         });
       }
+
+      if (user.verified) {
+        const html = `
+        <p>Hi ${user.username},</p>
+        <p>Email is already verified!</p>
+        <p>Your email has been already verified!</p>
+        <a href="http://localhost:3000/api/auth/login">Login to Your Account</a>
+      `;  
+        return res.send(html);
+      }
+
 
       user.verified = true;
       await user.save();

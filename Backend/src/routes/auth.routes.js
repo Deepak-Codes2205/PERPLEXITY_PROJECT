@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {registerUser, verifyEmail, loginUser, getMe} from "../controllers/auth.controller.js";
+import {registerUser, verifyEmail, loginUser, getMe, resendVerificationEmail} from "../controllers/auth.controller.js";
 import { registerValidator, loginValidator } from "../validators/auth.validator.js";
 import { authUser } from "../middlewares/auth.middleware.js";
 
@@ -20,6 +20,15 @@ authRouter.post("/register", registerValidator, registerUser);
  * @access Public
  */
 authRouter.post("/login", loginValidator, loginUser);
+
+
+
+/**
+ * @desc Resend verification email
+ * @route POST /api/auth/resend-verification
+ * @access Public
+ */
+authRouter.post("/resend-verification", resendVerificationEmail);
 
 
 /**
