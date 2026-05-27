@@ -104,18 +104,6 @@ export const loginUser = async (req, res) => {
         err: "Email not verified"
       });
     }
-
-    // await sendEmail({
-    //   to: email,
-    //   subject: "Welcome to Our App",
-    //   html: `
-    //         <p>Hi ${username},</p>
-    //         <p>Thank you for registering at <strong>Perplexity</strong>. We are excited to have you on board.</p>
-    //         <p>Please verify your email address by clicking the link below:</p>
-    //         <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
-    //         <p>Best regards,<br>The Perplexity Team</p>
-    //       `
-    // });
     
     const token = jwt.sign({ 
       id: user._id,

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-html,
-body {
+#root, html, body {
   color:black;
   background-color: rgb(65, 64, 64);
+  box-sizing: border-box  ;
 }

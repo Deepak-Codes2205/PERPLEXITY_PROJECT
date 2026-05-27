@@ -1,14 +1,28 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../hook/useAuth'
+
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = (event) => {
+  const { handleLogin} = useAuth()
+
+  const navigate = useNavigate()
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    console.log('Login submit:', { email, password })
-    // add actual login logic here
+
+    const payload = { 
+      email, password 
+    }
+
+    await handleLogin(email, password)
+
+    navigate("/")
+    //console.log('login Payload :', payload)
+    
   }
 
   return (
@@ -49,7 +63,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full rounded-full bg-[#31b8c6] px-5 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-[#31b8c6]/30"
+            className="w-full rounded-xl bg-[#31b8c6] px-5 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:scale-[1.0] focus:outline-none focus:ring-4 focus:ring-[#31b8c6]/30"
           >
             Login
           </button>
