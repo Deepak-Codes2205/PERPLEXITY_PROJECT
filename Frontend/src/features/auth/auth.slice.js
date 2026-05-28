@@ -4,7 +4,7 @@ const authSlice = createSlice({
     name: 'auth',
     initialState: {
         user: null,
-        loading: false,
+        loading: true, // On hydration loading is true 
         error: null,
     },
     reducers: {
