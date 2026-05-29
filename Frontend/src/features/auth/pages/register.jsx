@@ -1,15 +1,20 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+//import { useAuth } from '../hook/useAuth'
+
 
 const Register = () => {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
+  //const { handleRegister } = useAuth()
+
   const handleSubmit = (event) => {
     event.preventDefault()
+    //handleRegister(username, email, password)
     console.log('Register submit:', { username, email, password })
-    // add actual registration logic here
+    //add actual registration logic here
   }
 
   return (
