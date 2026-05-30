@@ -15,7 +15,7 @@ const messageSchema = new Schema(
         role: { 
             type: String, 
             enum: ['user', 'ai'], 
-            default: 'user' 
+            required: true 
         },
     }, 
     { timestamps: true }
