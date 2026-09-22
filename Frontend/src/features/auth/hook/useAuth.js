@@ -34,6 +34,7 @@ export function useAuth() {
         try {
             dispatch(setLoading(true))
             const data = await getMe()
+            console.log('getMe response:', data) // 👈 add this
             dispatch(setUser(data))
         } catch (error) {
             dispatch(setError(error.response?.data?.message || "Failed to fetch user data"))

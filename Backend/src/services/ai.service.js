@@ -4,10 +4,14 @@
 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatMistralAI } from "@langchain/mistralai";
-
 //HumanMessage for sending message to model and SystemMessage for giving instructions to model
 // AIMessage for getting response from model in structured way 
 import { HumanMessage, SystemMessage, AIMessage } from "@langchain/core/messages";
+import { tool } from "@langchain/core/tools";
+import { createAgent } from "langchain";
+import * as z from "zod";
+import { searchInternet } from "./internet.service.js";
+
 
 //Gemini for message response
 const geminiModel = new ChatGoogleGenerativeAI({
@@ -23,21 +27,45 @@ const mistralModel = new ChatMistralAI({
 
 
 
+//Tool for Internet Search
+const searchInternetTool = tool(
+    searchInternet,
+    {
+        name: "searchInternet",
+        description: "Use this tool to get the latest information from the internet.",
+        schema: z.object({
+            query: z.string().describe("The search query to look up on the internet.")
+        })
+    }
+)
+
+//Agent to use the tools
+const agent = createAgent({
+    model: mistralModel,
+    tools: [ searchInternetTool ],
+})
+
+
 // We will test/run this from server.js file but on production we will not this, In production this function will not be created
 export async function generateResponse(messages) {
     
     //First creating an array of message through mapping and then invoking it to get the responce from the model
 
-    const response = await geminiModel.invoke(messages.map(msg => {
-        if(msg.role === "user") {
-            return new HumanMessage(msg.content);
-        }
-        else if(msg.role === "ai") {
-            return new AIMessage(msg.content);
-        }
+    const response = await agent.invoke(messages.map(msg => {
+        message: messages.map(msg =>{
+            if(msg.role === "user") 
+            {
+                return new HumanMessage(msg.content);
+            }
+            else if(msg.role === "ai") 
+            {
+                return new AIMessage(msg.content);
+            }
+
+        })
     }));
 
-    return response.text;
+    return response.messages[response.messages.length -1].text;
 }
 
 export async function generateChatTitle(message) {
