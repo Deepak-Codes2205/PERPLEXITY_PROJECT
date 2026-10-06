@@ -4,7 +4,7 @@
 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatMistralAI } from "@langchain/mistralai";
-//HumanMessage for sending message to model and SystemMessage for giving instructions to model
+// HumanMessage for sending message to model and SystemMessage for giving instructions to model
 // AIMessage for getting response from model in structured way 
 import { HumanMessage, SystemMessage, AIMessage } from "@langchain/core/messages";
 import { tool } from "@langchain/core/tools";
@@ -18,6 +18,7 @@ const geminiModel = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-flash-lite",
   apiKey: process.env.GEMINI_API_KEY
 });
+
 
 //Mistral for generating chat title
 const mistralModel = new ChatMistralAI({
@@ -37,7 +38,7 @@ const searchInternetTool = tool(
             query: z.string().describe("The search query to look up on the internet.")
         })
     }
-)
+)   
 
 //Agent to use the tools
 const agent = createAgent({

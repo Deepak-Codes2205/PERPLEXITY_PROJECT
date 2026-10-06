@@ -1,7 +1,46 @@
 @import "tailwindcss";
 
-#root, html, body {
-  color:black;
-  background-color: rgb(65, 64, 64);
-  box-sizing: border-box  ;
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #15181e inset !important;
+  -webkit-text-fill-color: #f3f4f6 !important;
+  caret-color: #f3f4f6;
+}
+
+@theme {
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  min-height: 100vh;
+  background-color: #0d0e11;
+  color: #f3f4f6;
+  font-family: var(--font-sans);
+}
+
+/* Atmospheric Ambient Radial Glow */
+.ambient-radial-glow {
+  background: radial-gradient(circle at 50% 12%, rgba(32, 201, 151, 0.12) 0%, rgba(6, 182, 212, 0.05) 30%, rgba(13, 14, 17, 0) 70%);
+}
+
+.ambient-dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Subtle focus glows */
+.glow-cyan-input:focus-within {
+  border-color: #20c997;
+  box-shadow: 0 0 0 1px #20c997, 0 0 16px -2px rgba(32, 201, 151, 0.25);
+}
+
+.btn-gradient-glow:hover {
+  box-shadow: 0 0 24px -2px rgba(32, 201, 151, 0.35);
 }

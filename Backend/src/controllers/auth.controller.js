@@ -67,6 +67,62 @@ export const registerUser = async (req, res) => {
 };
 
 
+/**
+  * @desc Verify user's email address
+  * @route GET /api/auth/verify-email
+  * @access Public
+  * @query { token }  
+ */
+//export async function verifyEmail(req, res) {
+export const verifyEmail = async (req, res) => {
+  
+  const { token } = req.query;
+
+    try{
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      const user = await userModel.findOne({ email: decoded.email });
+
+      if (!user) {
+        return res.status(400).json({ 
+          message: "Invalid verification token",
+          success: false,
+          err: "User not found"
+        });
+      }
+
+      if (user.verified) {
+        const html = `
+        <p>Hi ${user.username},</p>
+        <p>Email is already verified!</p>
+        <p>Your email has been already verified!</p>
+        <a href="http://localhost:5173/login">Login to Your Account</a>
+      `;  
+        return res.send(html);
+      }
+
+
+      user.verified = true;
+      await user.save();
+
+      const html = `
+        <p>Hi ${user.username},</p>
+        <p>Email verification successfully!</p>
+        <p>Your email has been successfully verified! You can now log in to your account.</p>
+        <a href="http://localhost:3000/api/auth/login">Login to Your Account</a>
+      `;  
+
+      return res.send(html);
+
+    }catch (error) {
+      return res.status(400).json({ 
+        message: "Invalid or expired verification token", 
+        success: false,
+        err: error.message
+    });
+  }
+}
+
 
 /**
  * 
@@ -228,64 +284,5 @@ export const getMe = async (req, res) => {
   });
    
 
-}
-
-
-
-/**
-  * @desc Verify user's email address
-  * @route GET /api/auth/verify-email
-  * @access Public
-  * @query { token }  
- */
-//export async function verifyEmail(req, res) {
-
-export const verifyEmail = async (req, res) => {
-  
-  const { token } = req.query;
-
-    try{
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      const user = await userModel.findOne({ email: decoded.email });
-
-      if (!user) {
-        return res.status(400).json({ 
-          message: "Invalid verification token",
-          success: false,
-          err: "User not found"
-        });
-      }
-
-      if (user.verified) {
-        const html = `
-        <p>Hi ${user.username},</p>
-        <p>Email is already verified!</p>
-        <p>Your email has been already verified!</p>
-        <a href="http://localhost:3000/api/auth/login">Login to Your Account</a>
-      `;  
-        return res.send(html);
-      }
-
-
-      user.verified = true;
-      await user.save();
-
-      const html = `
-        <p>Hi ${user.username},</p>
-        <p>Email verification successfully!</p>
-        <p>Your email has been successfully verified! You can now log in to your account.</p>
-        <a href="http://localhost:3000/api/auth/login">Login to Your Account</a>
-      `;  
-
-      return res.send(html);
-
-    }catch (error) {
-      return res.status(400).json({ 
-        message: "Invalid or expired verification token", 
-        success: false,
-        err: error.message
-    });
-  }
 }
 

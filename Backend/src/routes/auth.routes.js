@@ -15,6 +15,15 @@ authRouter.post("/register", registerValidator, registerUser);
 
 
 /**
+ * @route GET /api/auth/verify-email
+ * @desc Verify user's email address
+ * @access Public
+ * @query { token }
+ */
+authRouter.get("/verify-email", verifyEmail);
+
+
+/**
  * @route POST /api/auth/login
  * @desc Login user and return JWT token
  * @access Public
@@ -38,14 +47,6 @@ authRouter.post("/resend-verification", resendVerificationEmail);
  */
 authRouter.get("/get-me", authUser, getMe); 
 
-
-/**
- * @route GET /api/auth/verify-email
- * @desc Verify user's email address
- * @access Public
- * @query { token }
- */
-authRouter.get("/verify-email", verifyEmail);
 
 
 
