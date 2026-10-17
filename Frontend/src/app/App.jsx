@@ -7,10 +7,10 @@ import { useEffect } from 'react'
 function App() {
 
   const auth = useAuth()
-  
+  //HYDRATING THE STORE, Fetching user data on initial mount
   useEffect(() => {
     auth.handleGetMe()
-  }, [])  
+  }, [])
 
   return (
     <RouterProvider router={router} />

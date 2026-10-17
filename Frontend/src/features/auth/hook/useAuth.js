@@ -1,6 +1,7 @@
+//HOOK LAYER
 import { useDispatch } from 'react-redux'
 import { register, login, getMe } from '../service/auth.api'
-import {setUser, setLoading, setError} from '../auth.slice'
+import { setUser, setLoading, setError } from '../auth.slice'
 
 export function useAuth() {
     const dispatch = useDispatch()
@@ -8,6 +9,7 @@ export function useAuth() {
     async function handleRegister(username, email, password) {
         try {
             dispatch(setLoading(true))
+            //uSER DATA WILL NOT RETURN ON REGISTERING AS USER NEEDS TO VERIFY THEIR EMAIL ADDRESS
             await register(username, email, password)
             //dispatch(setUser(data))
             return true
@@ -20,7 +22,7 @@ export function useAuth() {
     }
 
     async function handleLogin(email, password) {
-        
+
         try {
             dispatch(setLoading(true))
             const data = await login(email, password)
@@ -40,7 +42,7 @@ export function useAuth() {
             dispatch(setUser(data))
         } catch (error) {
             dispatch(setError(error.response?.data?.message || "Failed to fetch user data"))
-        }   finally { 
+        } finally {
             dispatch(setLoading(false))
         }
     }

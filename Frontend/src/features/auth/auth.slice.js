@@ -1,3 +1,4 @@
+//STATE LAYER
 import { createSlice } from '@reduxjs/toolkit'
 
 const authSlice = createSlice({
@@ -8,7 +9,7 @@ const authSlice = createSlice({
         error: null,
     },
     reducers: {
-        setUser(state, action) {    
+        setUser(state, action) {
             state.user = action.payload;
         },
         setLoading(state, action) {
