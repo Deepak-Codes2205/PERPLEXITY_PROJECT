@@ -1,7 +1,7 @@
-import { createSlice, current } from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit"
 
 const chatSlice = createSlice({
-    name:'chat',
+    name: 'chat',
     initialState: {
         chats: {},
         currentChatId: null,
@@ -10,40 +10,43 @@ const chatSlice = createSlice({
     },
     reducers: {
 
-        createNewChat : (state, action)=>{
-            const[chatId, title] = action.payload
-            state.chats[chatId] ={
+        createNewChat: (state, action) => {
+            const { chatId, title } = action.payload
+            state.chats[chatId] = {
                 id: chatId,
                 title,
-                messages : [],
+                messages: [],
                 lastUpdated: new Date().toISOString(),
             }
-           
+
         },
-        addNewMessages : (state, action)=>{
-            const { title, content, role } = action.payload
-            state.chats[ chatId ].message.push({content, role});
-        },
-        
-        addMessages: (state, action)=>{
-            const { chatId, messages} = state.payload
-            state.chats[chatId].messages.push(...messages)
+        addNewMessages: (state, action) => {
+            const { chatId, content, role } = action.payload
+            state.chats[chatId].messages.push({ content, role })
         },
 
-        setChats: (state, action) =>{   
+        addMessages: (state, action) => {
+            const { chatId, messages } = action.payload
+            const chat = state.chats[chatId]
+            if (chat) {
+                chat.messages.push(...messages)
+            }
+        },
+
+        setChats: (state, action) => {
             state.chats = action.payload
         },
-        setCurrentChatId: (state, action) =>{   
+        setCurrentChatId: (state, action) => {
             state.currentChatId = action.payload
         },
-        setLoading: (state, action) =>{   
+        setLoading: (state, action) => {
             state.isLoading = action.payload
         },
-        setError: (state, action) =>{   
+        setError: (state, action) => {
             state.error = action.payload
         }
     }
 })
 
-export const { setChats, setLoading, setCurrentChatId, setError, createNewChat, addNewMessages, addMessages} = chatSlice.actions
+export const { setChats, setLoading, setCurrentChatId, setError, createNewChat, addNewMessages, addMessages } = chatSlice.actions
 export default chatSlice.reducer

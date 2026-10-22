@@ -1,85 +1,74 @@
-import { initializeSocketConnection } from '../service/chat.socket';
-import { sendMessages, getChats, getMessages, deleteChatandMessages } from '../service/chat.api';
-import { setChats, setLoading, setCurrentChatId, setError, createNewChat, addNewMessages, addMessages } from '../chat.slice';
 import { useDispatch } from 'react-redux';
-
+import { addMessages, addNewMessages, createNewChat, setChats, setCurrentChatId, setLoading } from '../chat.slice';
+import { getChats, getMessages, sendMessages } from '../service/chat.api';
+import { initializeSocketConnection } from '../service/chat.socket';
 
 export const useChat = () => {
-  // Initialize the Socket.IO connection when the hook is used
+  const dispatch = useDispatch();
 
-  const dispatch = useDispatch()
+  async function handleSendMessage({ message, chatId }) {
+    dispatch(setLoading(true));
+    const data = await sendMessages({ message, chatId });
+    const { chat, aiMessage } = data;
+    const activeChatId = chatId || chat._id;
 
-  async function handleSendMessage({ message, chatId}){
-    dispatch(setLoading(true))
-    const data = await sendMessages({ message, chatId})
-    const { chat, aiMessage} = data
-
-    if(!chatId)
-    {
+    if (!chatId) {
       dispatch(createNewChat({
         chatId: chat._id,
         title: chat.title,
-      }))
+      }));
     }
 
-    dispatch(addNewMessage({
-      chatId: chatId || chat._id,
-      content : message,
-      role: "user"
-    }))
+    dispatch(addNewMessages({
+      chatId: activeChatId,
+      content: message,
+      role: 'user',
+    }));
 
-    dispatch(addNewMessage({
-      chatId: chatId || chat._id,
-      content : aiMessage.message.content,
-      role: aiMessage.role
-    }))
+    dispatch(addNewMessages({
+      chatId: activeChatId,
+      content: aiMessage.content,
+      role: aiMessage.role,
+    }));
 
-    dispatch(setcurrentChatId(chat._id))
-  
+    dispatch(setCurrentChatId(activeChatId));
+    dispatch(setLoading(false));
+  }
 
-  const dispatch = useDispatch()
-}
 
-async function handleGetChats() {
-    dispatch(setLoading(true))
-    const data = await getChats()
-    const { chats } = data
-    dispatch(setChats(chats.reduce((acc, chat) => {
-        acc[ chat._id ] = {
-            id: chat._id,
-            title: chat.title,
-            messages: [],
-            lastUpdated: chat.updatedAt,
-        }
-        return acc
-    }, {})))
-    dispatch(setLoading(false))
-}
- 
-async function handleOpenChat(chatId, chats) {
-
-    if(chats[chatId]?.message.length === 0)
-    {
-        const data = await getMessages(chatId)
-        const { messages } = data
-
-        const formattedMessages = messages.map(msg => ({
-            content: msg.content,
-            role: msg.role, 
-        }))
-
-        dispatch(addMessages({
-            chatId,
-            messages: formattedMessages,
-        }))
+  async function handleGetChats() {
+    dispatch(setLoading(true));
+    try {
+      const { chats } = await getChats();
+      dispatch(setChats(chats.reduce((acc, chat) => {
+        acc[chat._id] = {
+          id: chat._id,
+          title: chat.title,
+          messages: [],
+          lastUpdated: chat.updatedAt,
+        };
+        return acc;
+      }, {})));
+    } finally {
+      dispatch(setLoading(false));
     }
-    dispatch(setCurrentChatId(chatId))
-}
+  }
+
+  async function handleOpenChat(chatId, chats) {
+    if (!Array.isArray(chats[chatId]?.messages) || chats[chatId].messages.length === 0) {
+      const { messages } = await getMessages(chatId);
+      dispatch(addMessages({
+        chatId,
+        messages: messages.map(({ content, role }) => ({ content, role })),
+      }));
+    }
+    dispatch(setCurrentChatId(chatId));
+  }
 
   return {
     initializeSocketConnection,
     handleSendMessage,
     handleGetChats,
-    handleOpenChat
+    handleOpenChat,
   };
 };
