@@ -6,10 +6,12 @@ const tavily = Tavily({
 });
 
 // tools will return result in form of string or number
-export const searchInternet = async({query})=>{
+export const searchInternet = async({ query })=>{
     const results =  await tavily.search(query,{
         maxResults: 5,
         searchDepth: "advanced"
+        // searchDepth: "basic"/"fast"/"utra-fast"
+        
     })
     //console.log(JSON.stringify(results))
     return JSON.stringify(results)

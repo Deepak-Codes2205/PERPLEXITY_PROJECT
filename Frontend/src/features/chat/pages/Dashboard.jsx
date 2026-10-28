@@ -103,11 +103,11 @@ const Dashboard = () => {
       {/* LEFT SIDEBAR: Chat History & User Profile                */}
       {/* ========================================================= */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-72 sm:w-80 bg-[#121419] border-r border-[#232730] flex flex-col justify-between transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-40 w-72 sm:w-80 bg-[#0d0e11] md:bg-transparent border-r border-[#232730] flex flex-col justify-between transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Top Header / App Branding */}
-        <div className="p-4 border-b border-[#232730]/70 flex items-center justify-between">
+        <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* QueryMind Asterism Emblem */}
             <div className="w-8 h-8 rounded-lg bg-[#15181e] border border-[#232730] flex items-center justify-center shadow-[0_0_12px_rgba(32,201,151,0.2)] shrink-0">
@@ -231,7 +231,7 @@ const Dashboard = () => {
         </div>
 
         {/* Bottom User Profile Section */}
-        <div className="p-3 border-t border-[#232730]/70 bg-[#0f1115]">
+        <div className="p-3 bg-transparent">
           <div className="flex items-center gap-3 p-2 rounded-xl bg-[#15181e] border border-[#232730]">
             {/* User Avatar with Initials */}
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#20c997]/20 to-[#06b6d4]/20 border border-[#20c997]/30 flex items-center justify-center text-[#20c997] font-semibold text-sm shrink-0">
@@ -253,7 +253,7 @@ const Dashboard = () => {
       {/* ========================================================= */}
       <main className="relative z-10 flex-1 flex flex-col h-full min-w-0 overflow-hidden">
         {/* Top Header Bar */}
-        <header className="h-14 px-4 sm:px-6 flex items-center justify-between bg-[#121419]/80 backdrop-blur-md shrink-0">
+        <header className="h-14 px-4 sm:px-6 flex items-center justify-between bg-transparent shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             {/* Mobile Sidebar Toggle Button */}
             <button
