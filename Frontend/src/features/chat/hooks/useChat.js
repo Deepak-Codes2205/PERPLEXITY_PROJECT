@@ -38,20 +38,19 @@ export const useChat = () => {
 
   async function handleGetChats() {
     dispatch(setLoading(true));
-    try {
-      const { chats } = await getChats();
-      dispatch(setChats(chats.reduce((acc, chat) => {
-        acc[chat._id] = {
-          id: chat._id,
-          title: chat.title,
-          messages: [],
-          lastUpdated: chat.updatedAt,
-        };
-        return acc;
-      }, {})));
-    } finally {
-      dispatch(setLoading(false));
-    }
+
+    const { chats } = await getChats();
+    dispatch(setChats(chats.reduce((acc, chat) => {
+      acc[chat._id] = {
+        id: chat._id,
+        title: chat.title,
+        messages: [],
+        lastUpdated: chat.updatedAt,
+      };
+      return acc;
+    }, {})));
+
+    dispatch(setLoading(false));
   }
 
   async function handleOpenChat(chatId, chats) {

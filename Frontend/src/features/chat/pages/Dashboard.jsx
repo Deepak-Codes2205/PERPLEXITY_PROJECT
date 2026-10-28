@@ -286,7 +286,7 @@ const Dashboard = () => {
         </header>
 
         {/* Message Feed Area */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* Empty State / Welcome Screen when no messages in thread */}
           {messages.length === 0 ? (
             <div className="max-w-4xl mx-auto h-full flex flex-col justify-center items-center text-center py-12">
@@ -341,7 +341,7 @@ const Dashboard = () => {
             </div>
           ) : (
             /* Active Message List */
-            <div className="max-w-5xl mx-auto space-y-6 pb-28">
+            <div className="max-w-6xl xl:max-w-7xl mx-auto space-y-6 pb-28">
               {messages.map((message, index) => {
                 const isUser = message.role === 'user'
 
@@ -370,9 +370,9 @@ const Dashboard = () => {
 
                     {/* Message Card */}
                     <div
-                      className={`rounded-2xl px-4 py-3.5 text-sm sm:text-[15px] leading-relaxed shadow-md ${isUser
-                        ? 'max-w-[88%] sm:max-w-[80%] bg-[#1b222d] border border-[#2d3748] text-[#f3f4f6] rounded-tr-sm'
-                        : 'flex-1 min-w-0 bg-[#14171e]/90 border border-[#232730] text-[#e5e7eb] rounded-tl-sm'
+                      className={`rounded-2xl px-4 py-3.5 text-sm sm:text-[15px] leading-relaxed bg-transparent ${isUser
+                        ? 'max-w-[95%] sm:max-w-[88%] border border-[#2d3748] text-[#f3f4f6] rounded-tr-sm'
+                        : 'flex-1 min-w-0 border-none text-[#e5e7eb] rounded-tl-sm'
                         }`}
                     >
                       {isUser ? (
@@ -438,7 +438,7 @@ const Dashboard = () => {
                       <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
                     </svg>
                   </div>
-                  <div className="bg-[#14171e] border border-[#232730] rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+                  <div className="bg-transparent border border-[#232730] rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
                     <span className="text-xs text-[#9ca3af]">QueryMind is searching and thinking</span>
                     <div className="flex gap-1 items-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#20c997] animate-bounce [animation-delay:-0.3s]" />
@@ -459,7 +459,7 @@ const Dashboard = () => {
         {/* BOTTOM INPUT DOCK                                        */}
         {/* ========================================================= */}
         <div className="relative shrink-0 p-4 sm:p-6 bg-gradient-to-t from-[#0d0e11] via-[#0d0e11]/95 to-transparent">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-6xl xl:max-w-7xl mx-auto">
             <form
               onSubmit={handleSubmitMessage}
               className="relative bg-[#15181e] border border-[#232730] rounded-2xl shadow-2xl focus-within:border-[#20c997] focus-within:shadow-[0_0_20px_rgba(32,201,151,0.2)] transition-all duration-200"
