@@ -5,6 +5,16 @@ import { useChat } from '../hooks/useChat'
 import { setCurrentChatId } from '../chat.slice'
 import remarkGfm from 'remark-gfm'
 
+
+
+function getDomain(url) {
+  try {
+    return new URL(url).hostname.replace('www.', '')
+  } catch {
+    return url
+  }
+}
+
 /**
  * Dashboard Page - Main Chat Interface for the AI Chat Application
  * Designed with QueryMind dark theme: #0d0e11 background, #15181e cards, and #20c997 (mint/teal) accents.
@@ -378,38 +388,66 @@ const Dashboard = () => {
                       {isUser ? (
                         <p className="whitespace-pre-wrap">{message.content}</p>
                       ) : (
-                        <div className="prose prose-invert max-w-none text-sm sm:text-[15px]">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                              p: ({ children }) => <p className="mb-2.5 last:mb-0 text-[#e2e8f0] leading-relaxed">{children}</p>,
-                              ul: ({ children }) => <ul className="mb-2.5 list-disc pl-5 space-y-1 text-[#d1d5db]">{children}</ul>,
-                              ol: ({ children }) => <ol className="mb-2.5 list-decimal pl-5 space-y-1 text-[#d1d5db]">{children}</ol>,
-                              li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                              strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
-                              a: ({ href, children }) => (
-                                <a href={href} target="_blank" rel="noreferrer" className="text-[#20c997] hover:underline font-medium">
-                                  {children}
-                                </a>
-                              ),
-                              code: ({ inline, children }) =>
-                                inline ? (
-                                  <code className="rounded bg-[#1b1f27] border border-[#2d3340] px-1.5 py-0.5 font-mono text-xs text-[#20c997]">
+                        <>
+                          <div className="prose prose-invert max-w-none text-sm sm:text-[15px]">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                p: ({ children }) => <p className="mb-2.5 last:mb-0 text-[#e2e8f0] leading-relaxed">{children}</p>,
+                                ul: ({ children }) => <ul className="mb-2.5 list-disc pl-5 space-y-1 text-[#d1d5db]">{children}</ul>,
+                                ol: ({ children }) => <ol className="mb-2.5 list-decimal pl-5 space-y-1 text-[#d1d5db]">{children}</ol>,
+                                li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                                strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                                a: ({ href, children }) => (
+                                  <a href={href} target="_blank" rel="noreferrer" className="text-[#20c997] hover:underline font-medium">
                                     {children}
-                                  </code>
-                                ) : (
-                                  <code className="font-mono text-xs text-[#20c997]">{children}</code>
+                                  </a>
                                 ),
-                              pre: ({ children }) => (
-                                <pre className="my-3 overflow-x-auto rounded-xl bg-[#0a0c10] border border-[#232730] p-3.5 font-mono text-xs leading-normal shadow-inner">
-                                  {children}
-                                </pre>
-                              ),
-                            }}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
-                        </div>
+                                code: ({ inline, children }) =>
+                                  inline ? (
+                                    <code className="rounded bg-[#1b1f27] border border-[#2d3340] px-1.5 py-0.5 font-mono text-xs text-[#20c997]">
+                                      {children}
+                                    </code>
+                                  ) : (
+                                    <code className="font-mono text-xs text-[#20c997]">{children}</code>
+                                  ),
+                                pre: ({ children }) => (
+                                  <pre className="my-3 overflow-x-auto rounded-xl bg-[#0a0c10] border border-[#232730] p-3.5 font-mono text-xs leading-normal shadow-inner">
+                                    {children}
+                                  </pre>
+                                ),
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          </div>
+                          {/* Sources */}
+                          {message.sources?.length > 0 && (
+                            <div className="mt-4 pt-3 border-t border-[#232730]">
+                              <p className="text-[11px] font-semibold text-[#808998] tracking-wider uppercase mb-2">
+                                Sources
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {message.sources.map((source, i) => (
+                                  <a
+                                    key={source.url}
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-[200px] rounded-xl bg-[#15181e] border border-[#232730] hover:border-[#20c997]/50 hover:bg-[#1a1f29] px-3 py-2 transition-all duration-200"
+                                  >
+                                    <p className="text-[11px] text-[#808998] font-mono truncate">
+                                      <span className="text-[#20c997]">{i + 1}</span> · {getDomain(source.url)}
+                                    </p>
+                                    <p className="text-xs text-[#e5e7eb] mt-0.5 line-clamp-2 leading-snug">
+                                      {source.title}
+                                    </p>
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
 

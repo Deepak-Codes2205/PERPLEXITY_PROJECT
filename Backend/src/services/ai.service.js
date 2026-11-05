@@ -84,27 +84,54 @@ function toLangChainMessages(messages) {
 
 export async function generateResponse(messages) {
     
-       const response = await agent.invoke({
-        messages: [
-            new SystemMessage(`
-            You are a helpful and precise assistant for answering questions.
-            Today's date is ${new Date().toDateString()}.
-            For news, latest updates or anything recent, ALWAYS use the "searchInternet" tool with topic "news".
-            For questions about people, websites, companies or any other facts you are not sure about,
-            use the "searchInternet" tool with topic "general".
-            For current time or date in any place, ALWAYS use the "getCurrentTime" tool.
-            When you give news, mention the published date of each item.
-            Never refuse a request without first trying the tools.
-            If the first search gives poor results, search again with a different query.
-            `),
-            ...toLangChainMessages(messages),
-        ]
-    },
+    const response = await agent.invoke({
+      messages: [
+          new SystemMessage(`
+          You are a helpful and precise assistant for answering questions.
+          Today's date is ${new Date().toDateString()}.
+          For news, latest updates or anything recent, ALWAYS use the "searchInternet" tool with topic "news".
+          For questions about people, websites, companies or any other facts you are not sure about,
+          use the "searchInternet" tool with topic "general".
+          For current time or date in any place, ALWAYS use the "getCurrentTime" tool.
+          When you give news, mention the published date of each item.
+          Never refuse a request without first trying the tools.
+          If the first search gives poor results, search again with a different query.
+          `),
+          ...toLangChainMessages(messages),
+      ]},
     { recursionLimit: 10 } // stops endless tool-calling loops
-);
+  );
 
+  // Collect the links the agent used for this answer
+  const sources = [];
+  const seen = new Set();
 
-    return response.messages[response.messages.length -1].text;
+  for (const m of response.messages) 
+  {
+    if (m.type !== "tool" || m.name !== "searchInternet") continue;
+    if (typeof m.content !== "string") continue;
+
+    try {
+        const results = JSON.parse(m.content);
+        for (const { title, url } of results) 
+        {
+          if (url && !seen.has(url)) 
+          {      // skip duplicate links
+            seen.add(url);
+            sources.push({ title: title || url, url });
+          }
+        }
+    } catch {
+        // "search failed" message is plain text, so we skip it
+    }
+  }
+
+  console.log("Sources found:", sources.length); // for debugging
+
+  return {
+      text: response.messages[response.messages.length - 1].text,
+      sources: sources.slice(0, 5),   // max 5 cards
+  };
 }
 
 

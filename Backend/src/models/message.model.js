@@ -17,6 +17,12 @@ const messageSchema = new Schema(
             enum: ['user', 'ai'], 
             required: true 
         },
+        sources: [
+        {
+            _id: false,
+            title: String,
+            url: String
+        }],
     }, 
     { timestamps: true }
 );

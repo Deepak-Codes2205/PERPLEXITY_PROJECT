@@ -35,13 +35,13 @@ export async function sendMessage(req, res) {
     
 
     //Generates AI's response based on all the messages of the chat till now including user's current message
-    const result = await generateResponse(allMessages);
+    const { text, sources } = await generateResponse(allMessages);
 
-    //Stores AI's message in DB
     const aiMessage = await messageModel.create({
         chat: chatId || chat._id,
-        content: result,
-        role: "ai"
+        content: text || "Sorry, I could not generate an answer. Please try again.",
+        role: "ai",
+        sources
     });
 
 
