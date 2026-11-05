@@ -32,7 +32,11 @@ const Dashboard = () => {
   // Local state
   const [chatInput, setChatInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false) // Mobile drawer toggle
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false) // Question navigation dropdown toggle
+  const [highlightedIndex, setHighlightedIndex] = useState(null) // Highlight target message on jump
   const messagesEndRef = useRef(null)
+  const dropdownRef = useRef(null)
+  const highlightTimeoutRef = useRef(null)
 
   // Redux state
   const chats = useSelector((state) => state.chat.chats || {})
@@ -49,11 +53,72 @@ const Dashboard = () => {
   const currentChat = currentChatId ? chats[currentChatId] : null
   const messages = currentChat?.messages || currentChat?.message || []
 
+  // Extract all user questions with their original index in the messages array
+  const userQuestions = messages
+    .map((msg, originalIndex) => ({ ...msg, originalIndex }))
+    .filter((msg) => msg.role === 'user')
+
   // Initialize socket and fetch chats on mount
   useEffect(() => {
     chat.initializeSocketConnection()
     chat.handleGetChats()
   }, [])
+
+  // Close dropdown on outside click or Escape key
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isDropdownOpen])
+
+  // Close dropdown when switching chats or starting a new thread
+  useEffect(() => {
+    setIsDropdownOpen(false)
+  }, [currentChatId])
+
+  // Clean up any pending message highlight timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Jump to a specific user message in the chat feed
+  const handleJumpToMessage = (originalIndex) => {
+    setIsDropdownOpen(false)
+    const targetElement = document.getElementById(`message-${originalIndex}`)
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current)
+      }
+      setHighlightedIndex(originalIndex)
+      highlightTimeoutRef.current = setTimeout(() => {
+        setHighlightedIndex(null)
+      }, 2500)
+    }
+  }
 
   // Auto-scroll to the latest message whenever messages change or when waiting for AI
   useEffect(() => {
@@ -263,7 +328,7 @@ const Dashboard = () => {
       {/* ========================================================= */}
       <main className="relative z-10 flex-1 flex flex-col h-full min-w-0 overflow-hidden">
         {/* Top Header Bar */}
-        <header className="h-14 px-4 sm:px-6 flex items-center justify-between bg-transparent shrink-0">
+        <header className="h-14 px-4 sm:px-6 flex items-center justify-between bg-transparent shrink-0 relative z-30">
           <div className="flex items-center gap-3 min-w-0">
             {/* Mobile Sidebar Toggle Button */}
             <button
@@ -286,12 +351,116 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Right Header Status / Mode */}
-          <div className="flex items-center gap-2 text-xs">
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#15181e] border border-[#232730] text-[#9ca3af]">
-              <span className="w-2 h-2 rounded-full bg-[#20c997] animate-pulse" />
-              <span className="text-[11px] font-mono text-[#20c997]">Pro Search</span>
-            </div>
+          {/* Questions Navigation Dropdown (replacing Pro Search) */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              aria-expanded={isDropdownOpen}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all duration-200 cursor-pointer shadow-sm select-none ${
+                isDropdownOpen
+                  ? 'bg-[#1a1f29] border-[#20c997]/60 text-white shadow-[0_0_15px_rgba(32,201,151,0.18)]'
+                  : 'bg-[#15181e] border-[#232730] text-[#9ca3af] hover:text-white hover:border-[#20c997]/40 hover:bg-[#181c24]'
+              }`}
+              title="Jump to a question in this chat"
+            >
+              <svg
+                className="w-3.5 h-3.5 text-[#20c997]"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
+              <span className="hidden sm:inline">Questions</span>
+              <span className="px-1.5 py-0.2 rounded bg-[#20c997]/15 text-[#20c997] font-mono text-[10px] border border-[#20c997]/25">
+                {userQuestions.length}
+              </span>
+              <svg
+                className={`w-3.5 h-3.5 text-[#808998] transition-transform duration-200 ${
+                  isDropdownOpen ? 'rotate-180' : ''
+                }`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            {/* Dropdown Menu Popup */}
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 md:w-96 max-w-[calc(100vw-2rem)] rounded-2xl bg-[#15181e] border border-[#232730] shadow-[0_10px_35px_rgba(0,0,0,0.8)] z-50 overflow-hidden backdrop-blur-xl">
+                <div className="px-3.5 py-2.5 border-b border-[#232730] flex items-center justify-between bg-[#121419]/90">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9ca3af]">
+                      Chat Questions
+                    </span>
+                    <span className="text-[10px] font-mono text-[#20c997] px-1.5 py-0.5 rounded bg-[#20c997]/10 border border-[#20c997]/20">
+                      {userQuestions.length}
+                    </span>
+                  </div>
+                  {userQuestions.length > 0 && (
+                    <span className="text-[10px] text-[#808998]">Click to jump</span>
+                  )}
+                </div>
+
+                <div className="max-h-72 overflow-y-auto p-1.5 space-y-1 [scrollbar-width:thin] [scrollbar-color:#2d3340_transparent]">
+                  {userQuestions.length === 0 ? (
+                    <div className="py-6 px-4 text-center">
+                      <div className="w-8 h-8 rounded-lg bg-[#181b22] border border-[#232730] mx-auto flex items-center justify-center text-[#6b7280] mb-2">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                          <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                      </div>
+                      <p className="text-xs text-[#9ca3af] font-medium">No questions yet</p>
+                      <p className="text-[11px] text-[#6b7280] mt-0.5">
+                        Ask a question to navigate directly to it here.
+                      </p>
+                    </div>
+                  ) : (
+                    userQuestions.map((q, qIdx) => (
+                      <button
+                        key={q.originalIndex}
+                        type="button"
+                        onClick={() => handleJumpToMessage(q.originalIndex)}
+                        title={q.content}
+                        className="w-full text-left p-2.5 rounded-xl hover:bg-[#1f242d] border border-transparent hover:border-[#20c997]/30 transition-all flex items-start gap-2.5 group cursor-pointer"
+                      >
+                        <span className="mt-0.5 shrink-0 text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#20c997]/10 text-[#20c997] border border-[#20c997]/20 group-hover:bg-[#20c997] group-hover:text-[#0d0e11] transition-colors">
+                          #{qIdx + 1}
+                        </span>
+                        <p className="text-xs text-[#d1d5db] group-hover:text-white line-clamp-2 leading-relaxed flex-1">
+                          {q.content}
+                        </p>
+                        <svg
+                          className="w-3.5 h-3.5 text-[#6b7280] group-hover:text-[#20c997] shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -354,11 +523,13 @@ const Dashboard = () => {
             <div className="max-w-6xl xl:max-w-7xl mx-auto space-y-6 pb-28">
               {messages.map((message, index) => {
                 const isUser = message.role === 'user'
+                const isHighlighted = highlightedIndex === index
 
                 return (
                   <div
                     key={message.id || index}
-                    className={`flex items-start gap-3.5 ${isUser ? 'justify-end' : 'justify-start w-full'}`}
+                    id={`message-${index}`}
+                    className={`flex items-start gap-3.5 scroll-mt-6 transition-all duration-300 ${isUser ? 'justify-end' : 'justify-start w-full'}`}
                   >
                     {/* AI Avatar */}
                     {!isUser && (
@@ -371,18 +542,26 @@ const Dashboard = () => {
                           strokeWidth="2.2"
                         >
                           <line x1="12" y1="2" x2="12" y2="22" />
-                          <line x1="2" y1="12" x2="22" y2="12" />
-                          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                          <line x1="4.93" y1="19.07" x2="19.07" y2="4.93" />
+                          <line x1="12" y1="18" x2="12" y2="22" />
+                          <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+                          <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+                          <line x1="2" y1="12" x2="6" y2="12" />
+                          <line x1="18" y1="12" x2="22" y2="12" />
+                          <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+                          <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
                         </svg>
                       </div>
                     )}
 
                     {/* Message Card */}
                     <div
-                      className={`rounded-2xl px-4 py-3.5 text-sm sm:text-[15px] leading-relaxed bg-transparent ${isUser
-                        ? 'max-w-[95%] sm:max-w-[88%] border border-[#2d3748] text-[#f3f4f6] rounded-tr-sm'
-                        : 'flex-1 min-w-0 border-none text-[#e5e7eb] rounded-tl-sm'
+                      className={`rounded-2xl px-4 py-3.5 text-sm sm:text-[15px] leading-relaxed transition-all duration-300 ${isUser
+                        ? `max-w-[95%] sm:max-w-[88%] border text-[#f3f4f6] rounded-tr-sm ${
+                            isHighlighted
+                              ? 'border-[#20c997] bg-[#20c997]/15 ring-2 ring-[#20c997]/60 shadow-[0_0_22px_rgba(32,201,151,0.3)]'
+                              : 'border-[#2d3748] bg-transparent'
+                          }`
+                        : 'flex-1 min-w-0 border-none text-[#e5e7eb] rounded-tl-sm bg-transparent'
                         }`}
                     >
                       {isUser ? (
