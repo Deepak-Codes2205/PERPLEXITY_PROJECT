@@ -19,15 +19,16 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan('dev'));
+
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 app.use(cors({
-    origin: 'http://localhost:5173', // Adjust this to your frontend URL
+    origin: clientUrl, 
     credentials: true, // Allow cookies to be sent
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
 }));
 
  // Serve static files from the public directory
-app.use(express.static('./public'));
-
+app.use(express.static('./public'));app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Server is running' });

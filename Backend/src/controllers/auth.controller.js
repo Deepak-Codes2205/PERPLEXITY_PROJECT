@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/mail.service.js";
 import cookieParser from "cookie-parser"; 
 
+const appUrl = (process.env.APP_URL || 'http://localhost:5173').replace(/\/$/, '');
+const apiUrl = (process.env.API_URL || 'http://localhost:3000').replace(/\/$/, '');
 
 /**
  *@desc Register a new user
@@ -42,7 +44,7 @@ export const registerUser = async (req, res) => {
             <p>Hi ${username},</p>
             <p>Thank you for registering at <strong>Perplexity</strong>. We are excited to have you on board.</p>
             <p>Please verify your email address by clicking the link below:</p>
-            <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
+            <a href="${apiUrl}/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
             <p>Best regards,<br>The Perplexity Team</p>
           `
     });
@@ -96,7 +98,7 @@ export const verifyEmail = async (req, res) => {
         <p>Hi ${user.username},</p>
         <p>Email is already verified!</p>
         <p>Your email has been already verified!</p>
-        <a href="http://localhost:5173/login">Login to Your Account</a>
+        <a href="${appUrl}/login">Login to Your Account</a>
       `;  
         return res.send(html);
       }
@@ -109,7 +111,7 @@ export const verifyEmail = async (req, res) => {
         <p>Hi ${user.username},</p>
         <p>Email verification successfully!</p>
         <p>Your email has been successfully verified! You can now log in to your account.</p>
-        <a href="http://localhost:3000/api/auth/login">Login to Your Account</a>
+        <a href="${appUrl}/login">Login to Your Account</a>
       `;  
 
       return res.send(html);
@@ -230,7 +232,7 @@ export const resendVerificationEmail = async (req, res) => {
 
         <p>You requested a new email verification link.</p>
 
-        <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">
+        <a href="${apiUrl}/api/auth/verify-email?token=${emailVerificationToken}">
           Verify Email
         </a>
 
@@ -283,6 +285,4 @@ export const getMe = async (req, res) => {
     user
   });
    
-
 }
-
