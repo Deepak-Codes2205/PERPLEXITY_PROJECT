@@ -28,7 +28,8 @@ app.use(cors({
 }));
 
  // Serve static files from the public directory
-app.use(express.static('./public'));app.use(express.static(path.join(__dirname, '..', 'public')));
+//app.use(express.static('./public'));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Server is running' });
