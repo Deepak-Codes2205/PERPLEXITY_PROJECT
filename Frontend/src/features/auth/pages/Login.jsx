@@ -8,6 +8,9 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [resendMessage, setResendMessage] = useState('')
+  const [resendOk, setResendOk] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -15,7 +18,7 @@ const Login = () => {
   const loading = useSelector((state) => state.auth.loading)
   const error = useSelector((state) => state.auth.error)
 
-  const { handleLogin } = useAuth()
+  const { handleLogin, handleResendVerificationEmail } = useAuth()
 
   useEffect(() => {
     // Clear any previous error on mount
@@ -33,8 +36,19 @@ const Login = () => {
   const handleSubmit = async (event) => {
     event.preventDefault()
     if (!email.trim() || !password) return
-    await handleLogin(email, password)
-    navigate("/")
+    const ok = await handleLogin(email, password)
+    if (ok) navigate("/")
+  }
+
+  const handleResend = async () => {
+    if (!email.trim() || resendLoading) return
+
+    setResendLoading(true)
+    setResendMessage('')
+    const result = await handleResendVerificationEmail(email.trim())
+    setResendOk(result.ok)
+    setResendMessage(result.message)
+    setResendLoading(false)
   }
 
   return (
@@ -262,6 +276,19 @@ const Login = () => {
                       className="w-full h-11 pl-10 pr-3.5 bg-[#101217] border border-[#2a2f3a] rounded-xl text-sm text-white placeholder-[#4b5563] outline-none transition-all duration-200 focus:border-[#20c997] focus:ring-2 focus:ring-[#20c997]/20"
                     />
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={!email.trim() || resendLoading}
+                    className="mt-1.5 text-[11px] font-medium text-[#20c997] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {resendLoading ? 'Sending verification email...' : 'Resend verification email'}
+                  </button>
+                  {resendMessage && (
+                    <p className={`mt-1 text-[11px] ${resendOk ? 'text-[#4de6b1]' : 'text-[#ffb4ab]'}`}>
+                      {resendMessage}
+                    </p>
+                  )}
                 </div>
 
                 {/* Password Field */}

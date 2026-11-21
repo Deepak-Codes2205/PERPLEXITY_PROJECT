@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { useAuth } from '../hook/useAuth'
 import { setError } from '../auth.slice'
@@ -10,14 +10,16 @@ const Register = () => {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [resendMessage, setResendMessage] = useState('')
+  const [resendOk, setResendOk] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
 
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const user = useSelector((state) => state.auth.user)
   const loading = useSelector((state) => state.auth.loading)
   const error = useSelector((state) => state.auth.error)
 
-  const { handleRegister } = useAuth()
+  const { handleRegister, handleResendVerificationEmail } = useAuth()
 
   useEffect(() => {
     // Clear previous error on page load
@@ -52,11 +54,20 @@ const Register = () => {
     setSuccessMessage('')
     const ok = await handleRegister(username, email, password)
     if (ok) {
-      setSuccessMessage('Account created successfully! Redirecting to login...')
-      setTimeout(() => {
-        navigate('/login')
-      }, 1200)
+      setSuccessMessage('Account created successfully! Check your email inbox and verify your address before signing in.')
+      setResendMessage('')
     }
+  }
+
+  const handleResend = async () => {
+    if (!email.trim() || resendLoading) return
+
+    setResendLoading(true)
+    setResendMessage('')
+    const result = await handleResendVerificationEmail(email.trim())
+    setResendOk(result.ok)
+    setResendMessage(result.message)
+    setResendLoading(false)
   }
 
   return (
@@ -320,6 +331,19 @@ const Register = () => {
                         className="w-full h-11 pl-10 pr-3.5 bg-[#101217] border border-[#2a2f3a] rounded-xl text-sm text-white placeholder-[#4b5563] outline-none transition-all duration-200 focus:border-[#20c997] focus:ring-2 focus:ring-[#20c997]/20"
                       />
                     </div>
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={!email.trim() || resendLoading}
+                      className="mt-1.5 text-[11px] font-medium text-[#20c997] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {resendLoading ? 'Sending verification email...' : 'Resend verification email'}
+                    </button>
+                    {resendMessage && (
+                      <p className={`mt-1 text-[11px] ${resendOk ? 'text-[#4de6b1]' : 'text-[#ffb4ab]'}`}>
+                        {resendMessage}
+                      </p>
+                    )}
                   </div>
                 </div>
 

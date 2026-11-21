@@ -1,6 +1,6 @@
 //HOOK LAYER
 import { useDispatch } from 'react-redux'
-import { register, login, getMe } from '../service/auth.api'
+import { register, login, getMe, resendVerificationEmail } from '../service/auth.api'
 import { setUser, setLoading, setError } from '../auth.slice'
 
 export function useAuth() {
@@ -27,10 +27,27 @@ export function useAuth() {
             dispatch(setLoading(true))
             const data = await login(email, password)
             dispatch(setUser(data))
+            return true
         } catch (error) {
             dispatch(setError(error.response?.data?.message || "Login failed"))
+            return false
         } finally {
             dispatch(setLoading(false))
+        }
+    }
+
+    async function handleResendVerificationEmail(email) {
+        try {
+            const data = await resendVerificationEmail(email)
+            return {
+                ok: true,
+                message: data.message || "Verification email sent successfully",
+            }
+        } catch (error) {
+            return {
+                ok: false,
+                message: error.response?.data?.message || "Could not send the verification email. Please try again.",
+            }
         }
     }
 
@@ -48,5 +65,5 @@ export function useAuth() {
     }
 
 
-    return { handleRegister, handleLogin, handleGetMe }
+    return { handleRegister, handleLogin, handleGetMe, handleResendVerificationEmail }
 }
